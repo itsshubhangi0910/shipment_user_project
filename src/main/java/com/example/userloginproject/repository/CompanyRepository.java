@@ -11,4 +11,6 @@ public interface CompanyRepository extends JpaRepository<Company,Long> {
     Company findByEmail(String email);
 
     Company findByEmailAndIsDeleted(String email, boolean b);
+
+    Company findByEmailIgnoreCaseAndIsDeleted(String email, boolean b);
 }

@@ -1,5 +1,6 @@
 package com.example.userloginproject.service.impl;
 
+import com.example.userloginproject.config.GetUserFromToken;
 import com.example.userloginproject.model.Company;
 import com.example.userloginproject.model.response.RegisterResponse;
 import com.example.userloginproject.repository.CompanyRepository;
@@ -28,9 +29,13 @@ public class AdminUserService implements UserDetailsService, IAdminUserService {
     @Autowired
     private BCryptPasswordEncoder bCryptPasswordEncoder;
 
+    @Autowired
+    private GetUserFromToken getUserFromToken;
+
+
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-        Company company = companyRepository.findByEmailAndIsDeleted(email, false);
+        Company company = companyRepository.findByEmailIgnoreCaseAndIsDeleted(email, false);
        /* if (user == null) {
             // throw new UsernameNotFoundException("Invalid username");
             user = teamRepository.findByMobileNumber(email);
@@ -42,7 +47,7 @@ public class AdminUserService implements UserDetailsService, IAdminUserService {
 
     @Override
     public Company findByEmail(String username) {
-        Company company = companyRepository.findByEmailAndIsDeleted(username, false);
+        Company company = companyRepository.findByEmailIgnoreCaseAndIsDeleted(username, false);
        /* if (user == null) {
             user = teamRepository.findByMobileNumber(username);
         }*/
@@ -57,24 +62,32 @@ public class AdminUserService implements UserDetailsService, IAdminUserService {
 
     @Override
     public Object register(String email, String password) {
-        try {
+       // try {
             Company company = new Company();
             company.setEmail(email);
-            company.setPassword((password));
+            company.setPassword((bCryptPasswordEncoder.encode(password)));
            // user.setGender(Gender.MALE);
-            company.setName("HomeStay");
-            company.setMobileNo("Admin");
+           // company.setName("HomeStay");
+            //company.setPhoneNo("Admin");
             company.setIsActive(true);
             company.setIsDeleted(false);
             companyRepository.save(company);
-            company.setCompanyId(company.getId());
-        } catch (Exception e) {
+            company.setCompanyId(getUserFromToken.getUserFromToken().getCompanyId());
+           companyRepository.save(company);
+       /* } catch (Exception e) {
             e.printStackTrace();
-        }
+        }*/
         return "User Registered successfully";
 
     }
 
-
+    @Override
+    public Company findByUsername(String username) {
+        Company company = companyRepository.findByEmailIgnoreCaseAndIsDeleted(username, false);
+        /*if (company == null) {
+            company = companyRepository.findByMobileNumber(username);
+        }*/
+        return company;
+    }
 }
 

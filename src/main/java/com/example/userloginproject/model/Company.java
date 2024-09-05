@@ -1,6 +1,6 @@
 package com.example.userloginproject.model;
 
-import com.example.userloginproject.utils.Role;
+import com.example.userloginproject.utils.CompanyType;
 import com.example.userloginproject.utils.VerificationStatus;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
@@ -35,18 +35,37 @@ public class Company {
     @Column(name = "password")
     private String password;
 
-    @Column(name = "mobile_no")
-    private String mobileNo;
+    @Column(name = "phone_no")
+    private String phoneNo;
 
-    @Column(name = "verificationStatus", nullable = false)
+    @Column(name = "address")
+    private String address;
+
+    @Column(name = "country")
+    private String country;
+
+    @Column(name = "state")
+    private String state;
+
+    @Column(name = "city")
+    private String city;
+
+    @Column(name = "postal_code")
+    private String postalCode;
+
+    @Column(name = "company_type")
+    @Enumerated(EnumType.STRING)
+    private CompanyType companyType;
+
+    @Column(name = "verification_status")
     @Enumerated(EnumType.STRING)
     private VerificationStatus verificationStatus;
 
     @Column(name = "is_deleted")
-    private Boolean isDeleted=false;
+    private Boolean isDeleted = false;
 
     @Column(name = "is_active")
-    private  Boolean isActive=true;
+    private Boolean isActive = true;
 
     @CreationTimestamp
     @Column(name = "created_at")
@@ -55,8 +74,5 @@ public class Company {
     @UpdateTimestamp
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
-
-
-
 
 }

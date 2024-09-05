@@ -61,9 +61,9 @@ public class AuthController {
             LoginResponse loginResponse = new LoginResponse();
             loginResponse.setToken(token);
             loginResponse.setId(company.getId());
-            loginResponse.setName(company.getName());
+            loginResponse.setEmail(company.getEmail());
             //loginResponse.setMobileNo(company.getMobileNo());
-            //loginResponse.setCompanyId(company.getId());
+            loginResponse.setCompanyId(company.getId());
 
            /* if (team.getUserRole()!=null){
                 if (rolePrivilegeRepository.existsById(team.getUserRole())){

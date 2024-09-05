@@ -1,9 +1,11 @@
 package com.example.userloginproject.controller;
 
+import com.example.userloginproject.model.request.StoreDetailsRequest;
 import com.example.userloginproject.model.request.UserRequest;
 import com.example.userloginproject.model.response.CustomResponse;
 import com.example.userloginproject.model.response.EntityResponse;
 import com.example.userloginproject.service.IUserService;
+import lombok.Getter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -50,6 +52,22 @@ public class UserController {
     public ResponseEntity<?>deleteUserById(@RequestParam Long userId){
         try{
             return new ResponseEntity<>(new EntityResponse(iUserService.deleteUserById(userId),0),HttpStatus.OK);
+        }catch (Exception e){
+            return new ResponseEntity<>(new CustomResponse(e.getMessage(),-1),HttpStatus.OK);
+        }
+    }
+    @PostMapping("/saveOrUpdateStoreDetails")
+    public ResponseEntity<?>saveOrUpdateDetails(@RequestBody StoreDetailsRequest storeDetailsRequest){
+        try{
+            return new ResponseEntity<>(new EntityResponse(iUserService.saveOrUpdateDetails(storeDetailsRequest),0),HttpStatus.OK);
+        }catch (Exception e){
+            return new ResponseEntity<>(new CustomResponse(e.getMessage(),-1),HttpStatus.OK);
+        }
+    }
+    @GetMapping("/getAllStoreDetailsByCompanyId")
+    public ResponseEntity<?>getAllStoreDetailsByCompanyId(@RequestParam Long companyId){
+        try{
+            return new ResponseEntity<>(new EntityResponse(iUserService.getAllStoreDetailsByCompanyId(companyId),0),HttpStatus.OK);
         }catch (Exception e){
             return new ResponseEntity<>(new CustomResponse(e.getMessage(),-1),HttpStatus.OK);
         }

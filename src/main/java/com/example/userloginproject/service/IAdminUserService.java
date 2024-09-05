@@ -10,4 +10,6 @@ public interface IAdminUserService {
     UserDetails loadUserByUsername(String email);
 
     Company findByEmail(String username);
+
+    Company findByUsername(String username);
 }

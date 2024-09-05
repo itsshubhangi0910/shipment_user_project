@@ -1,8 +1,12 @@
 package com.example.userloginproject.service.impl;
 
+import com.example.userloginproject.config.GetUserFromToken;
+import com.example.userloginproject.model.StoreDetails;
 import com.example.userloginproject.model.User;
+import com.example.userloginproject.model.request.StoreDetailsRequest;
 import com.example.userloginproject.model.request.UserRequest;
 import com.example.userloginproject.model.response.PageDto;
+import com.example.userloginproject.repository.StoreDetailsRepository;
 import com.example.userloginproject.repository.UserRepository;
 import com.example.userloginproject.service.IUserService;
 import com.example.userloginproject.utils.Role;
@@ -16,6 +20,13 @@ public class UserService implements IUserService {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private StoreDetailsRepository storeDetailsRepository;
+
+    @Autowired
+    private GetUserFromToken getUserFromToken;
+
 
     @Override
     public Object saveOrUpdateUser(UserRequest userRequest) {
@@ -74,5 +85,49 @@ public class UserService implements IUserService {
             throw new Exception("id not found");
         }
 
+    }
+
+    @Override
+    public Object saveOrUpdateDetails(StoreDetailsRequest storeDetailsRequest) {
+        if (storeDetailsRepository.existsByCompanyId(getUserFromToken.getUserFromToken().getCompanyId())){
+            StoreDetails storeDetails = storeDetailsRepository.findByCompanyId(storeDetailsRequest.getStoreId());
+            storeDetails.setStoreName(storeDetailsRequest.getStoreName());
+            storeDetails.setIndustry(storeDetailsRequest.getIndustry());
+            storeDetails.setCountry(storeDetailsRequest.getCountry());
+            storeDetails.setPhoneNumber(storeDetailsRequest.getPhoneNumber());
+            storeDetails.setParcelCounts(storeDetailsRequest.getParcelCounts());
+            storeDetailsRepository.save(storeDetails);
+            return "updated successfully";
+        }else {
+            try {
+
+
+                StoreDetails storeDetails = new StoreDetails();
+                storeDetails.setStoreName(storeDetailsRequest.getStoreName());
+                storeDetails.setIndustry(storeDetailsRequest.getIndustry());
+                storeDetails.setCountry(storeDetailsRequest.getCountry());
+                storeDetails.setPhoneNumber(storeDetailsRequest.getPhoneNumber());
+                storeDetails.setParcelCounts(storeDetailsRequest.getParcelCounts());
+                storeDetails.setIsActive(true);
+                storeDetails.setIsDeleted(false);
+                storeDetailsRepository.save(storeDetails);
+                storeDetails.setCompanyId(getUserFromToken.getUserFromToken().getCompanyId());
+                storeDetailsRepository.save(storeDetails);
+            }catch (Exception e){
+                e.printStackTrace();
+            }
+            return "save successfully";
+        }
+
+    }
+
+    @Override
+    public Object getAllStoreDetailsByCompanyId(Long companyId) throws Exception {
+        if (storeDetailsRepository.existsByCompanyId(companyId)){
+            StoreDetails storeDetails = storeDetailsRepository.findByCompanyId(companyId);
+            return storeDetails;
+        }else {
+            throw new Exception("id not found");
+        }
     }
 }
