@@ -15,6 +15,9 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Service
 public class UserService implements IUserService {
 
@@ -29,13 +32,23 @@ public class UserService implements IUserService {
 
 
     @Override
-    public Object saveOrUpdateUser(UserRequest userRequest) {
+    public Object saveOrUpdateUser(UserRequest userRequest) throws Exception {
         if (userRepository.existsById(userRequest.getUserId())){
             User user = userRepository.findById(userRequest.getUserId()).get();
             user.setFirstName(userRequest.getFirstName());
             user.setLastName(userRequest.getLastName());
-            user.setMobileNo(userRequest.getMobileNo());
-            user.setEmail(userRequest.getEmail());
+            List<Long> userIds = new ArrayList<>();
+            userIds.add(userRequest.getUserId());
+            if (userRepository.existsByMobileNoAndUserIdNotIn(userRequest.getMobileNo(),userIds)){
+                throw new Exception("mobile number already exists");
+            }else {
+                user.setMobileNo(userRequest.getMobileNo());
+            }
+            if (userRepository.existsByEmailAndUserIdNotIn(userRequest.getEmail(),userIds)){
+                throw new Exception("email already exists");
+            }else {
+                user.setEmail(userRequest.getEmail());
+            }
             user.setPassword(userRequest.getPassword());
             user.setRole(Role.SHIPPER);
             userRepository.save(user);
@@ -44,14 +57,23 @@ public class UserService implements IUserService {
             User user = new User();
             user.setFirstName(userRequest.getFirstName());
             user.setLastName(userRequest.getLastName());
-            user.setMobileNo(userRequest.getMobileNo());
-            user.setEmail(userRequest.getEmail());
+            if (userRepository.existsByMobileNo(userRequest.getMobileNo())){
+                throw new Exception("mobile number already exists");
+            }else {
+                user.setMobileNo(userRequest.getMobileNo());
+            }
+            if (userRepository.existsByEmailAndIsDeleted(userRequest.getEmail(),false)){
+                throw new Exception("email already exists");
+            }else {
+                user.setEmail(userRequest.getEmail());
+            }
             user.setPassword(userRequest.getPassword());
             user.setRole(Role.SHIPPER);
+
             user.setIsActive(true);
             user.setIsDeleted(false);
             userRepository.save(user);
-            user.setCompanyId(user.getUserId());
+            user.setCompanyId(getUserFromToken.getUserFromToken().getCompanyId());
             userRepository.save(user);
             return "save data successfully";
         }
@@ -88,7 +110,7 @@ public class UserService implements IUserService {
     }
 
     @Override
-    public Object saveOrUpdateDetails(StoreDetailsRequest storeDetailsRequest) {
+    public Object saveOrUpdateCompanyStoreDetails(StoreDetailsRequest storeDetailsRequest) {
         if (storeDetailsRepository.existsByCompanyId(getUserFromToken.getUserFromToken().getCompanyId())){
             StoreDetails storeDetails = storeDetailsRepository.findByCompanyId(storeDetailsRequest.getStoreId());
             storeDetails.setStoreName(storeDetailsRequest.getStoreName());
@@ -99,23 +121,22 @@ public class UserService implements IUserService {
             storeDetailsRepository.save(storeDetails);
             return "updated successfully";
         }else {
-            try {
-
-
+          //  try {
                 StoreDetails storeDetails = new StoreDetails();
                 storeDetails.setStoreName(storeDetailsRequest.getStoreName());
                 storeDetails.setIndustry(storeDetailsRequest.getIndustry());
                 storeDetails.setCountry(storeDetailsRequest.getCountry());
                 storeDetails.setPhoneNumber(storeDetailsRequest.getPhoneNumber());
                 storeDetails.setParcelCounts(storeDetailsRequest.getParcelCounts());
+                storeDetails.setCompanyId(getUserFromToken.getUserFromToken().getCompanyId());
                 storeDetails.setIsActive(true);
                 storeDetails.setIsDeleted(false);
                 storeDetailsRepository.save(storeDetails);
-                storeDetails.setCompanyId(getUserFromToken.getUserFromToken().getCompanyId());
-                storeDetailsRepository.save(storeDetails);
-            }catch (Exception e){
+
+                //storeDetailsRepository.save(storeDetails);
+          /*  }catch (Exception e){
                 e.printStackTrace();
-            }
+            }*/
             return "save successfully";
         }
 

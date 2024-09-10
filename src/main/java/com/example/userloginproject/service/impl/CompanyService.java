@@ -1,10 +1,12 @@
 package com.example.userloginproject.service.impl;
 
 import com.example.userloginproject.config.GetUserFromToken;
+import com.example.userloginproject.model.BrandDetails;
 import com.example.userloginproject.model.CarrierDetails;
 import com.example.userloginproject.model.Company;
-import com.example.userloginproject.model.request.CarrierDetailsRequest;
+import com.example.userloginproject.model.request.BrandDetailsRequest;
 import com.example.userloginproject.model.request.CompanyRequest;
+import com.example.userloginproject.repository.BrandDetailsRepository;
 import com.example.userloginproject.repository.CarrierDetailsRepository;
 import com.example.userloginproject.repository.CompanyRepository;
 import com.example.userloginproject.service.ICompanyService;
@@ -12,7 +14,11 @@ import com.example.userloginproject.utils.CompanyType;
 import com.example.userloginproject.utils.VerificationStatus;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -28,6 +34,9 @@ public class CompanyService implements ICompanyService {
     @Autowired
     private GetUserFromToken getUserFromToken;
 
+    @Autowired
+    private BrandDetailsRepository brandDetailsRepository;
+
     @Override
     public Object signUpUser(CompanyRequest companyRequest) {
         Company company = new Company();
@@ -37,9 +46,9 @@ public class CompanyService implements ICompanyService {
         company.setPassword(companyRequest.getPassword());
         if (companyRequest.getCompanyType().equalsIgnoreCase("BUSINESS")) {
             company.setCompanyType(CompanyType.BUSINESS);
-        }else if (companyRequest.getCompanyType().equalsIgnoreCase("PERSONAL")){
+        } else if (companyRequest.getCompanyType().equalsIgnoreCase("PERSONAL")) {
             company.setCompanyType(CompanyType.PERSONAL);
-        }else{
+        } else {
         }
         company.setIsActive(true);
         company.setVerificationStatus(VerificationStatus.INCOMPLETE);
@@ -53,77 +62,132 @@ public class CompanyService implements ICompanyService {
 
     @Override
     public Object getLoginUser(String email, String password) {
-        if (companyRepository.existsByEmail(email)){
+        if (companyRepository.existsByEmail(email)) {
             Company user = companyRepository.findByEmail(email);
-            if(user.getPassword().equals(password)){
+            if (user.getPassword().equals(password)) {
                 return "user login successfully";
-            }
-            else {
+            } else {
                 return "login failed";
             }
 
-        }else {
+        } else {
             return "user not found";
         }
     }
 
     @Override
-    public Object saveOrUpdateAccountDetails(CompanyRequest companyRequest) {
-        if (companyRepository.existsById(companyRequest.getId())){
+    public Object saveOrUpdateCompanyAccountDetails(CompanyRequest companyRequest) throws Exception {
+        if (companyRepository.existsById(companyRequest.getId())) {
             Company company = companyRepository.findById(companyRequest.getId()).get();
-            company.setName(companyRequest.getName());
-            company.setPhoneNo(companyRequest.getPhoneNo());
-            if (companyRequest.getCompanyType().equalsIgnoreCase("BUSINESS")) {
-                company.setCompanyType(CompanyType.BUSINESS);
-            }else if (companyRequest.getCompanyType().equalsIgnoreCase("PERSONAL")){
-                company.setCompanyType(CompanyType.PERSONAL);
-            }else{
+            if (companyRepository.existsByEmailIgnoreCaseAndIsDeleted(companyRequest.getEmail().trim(), false)) {
+                throw new Exception("This Email is Already Exists..!");
+            } else {
+                company.setEmail(companyRequest.getEmail());
             }
-            company.setAddress(companyRequest.getAddress());
-            company.setCountry(companyRequest.getCountry());
-            company.setState(companyRequest.getState());
-            company.setCity(companyRequest.getCity());
-            company.setPostalCode(companyRequest.getPostalCode());
-            company.setVerificationStatus(VerificationStatus.INCOMPLETE);
-            companyRepository.save(company);
-            company.setCompanyId(getUserFromToken.getUserFromToken().getCompanyId());
-            companyRepository.save(company);
-            return "updated successfully";
-        }else {
-            Company company = new Company();
-            company.setName(companyRequest.getName());
-            company.setPhoneNo(companyRequest.getPhoneNo());
-            if (companyRequest.getCompanyType().equalsIgnoreCase("BUSINESS")) {
-                company.setCompanyType(CompanyType.BUSINESS);
-            }else if (companyRequest.getCompanyType().equalsIgnoreCase("PERSONAL")){
-                company.setCompanyType(CompanyType.PERSONAL);
-            }else{
+                company.setName(companyRequest.getName());
+                company.setPhoneNo(companyRequest.getPhoneNo());
+                if (companyRequest.getCompanyType().equalsIgnoreCase("BUSINESS")) {
+                    company.setCompanyType(CompanyType.BUSINESS);
+                } else if (companyRequest.getCompanyType().equalsIgnoreCase("PERSONAL")) {
+                    company.setCompanyType(CompanyType.PERSONAL);
+                } else {
+                }
+                company.setAddress(companyRequest.getAddress());
+                company.setCountry(companyRequest.getCountry());
+                company.setState(companyRequest.getState());
+                company.setCity(companyRequest.getCity());
+                company.setPostalCode(companyRequest.getPostalCode());
+                company.setVerificationStatus(VerificationStatus.INCOMPLETE);
+                companyRepository.save(company);
             }
-            company.setAddress(companyRequest.getAddress());
-            company.setCountry(companyRequest.getCountry());
-            company.setState(companyRequest.getState());
-            company.setCity(companyRequest.getCity());
-            company.setPostalCode(companyRequest.getPostalCode());
-            company.setVerificationStatus(VerificationStatus.INCOMPLETE);
-            companyRepository.save(company);
-            return "save data successfully";
-        }
+        return "updated successfully";
     }
 
     @Override
     public Object saveOrUpdateCompanyCarrier(Long carrierDetailsId, List<Long> carrierIds) {
-        List<CarrierDetails> list = new ArrayList<>();
-        for(Long carrierId:carrierIds){
-            CarrierDetails carrierDetails = new CarrierDetails();
-            carrierDetails.setCarrierDetailsId(carrierDetailsId);
-            carrierDetails.setIsActive(true);
-            carrierDetails.setIsDeleted(false);
-            carrierDetails.setCarrierId(carrierId);
-            list.add(carrierDetails);
-            carrierDetails.setCompanyId(carrierDetails.getCarrierDetailsId());
-            carrierDetailsRepository.save(carrierDetails);
+        try {
+            Long companyId = getUserFromToken.getUserFromToken().getCompanyId();
+
+            // Check if the carrier details exist (Update case)
+            if ((carrierDetailsId != null && carrierDetailsId>0) && carrierDetailsRepository.existsByCompanyId(companyId)) {
+                carrierDetailsRepository.deleteAllByCompanyId(companyId);
+
+                    if (carrierIds != null && !carrierIds.isEmpty()) {
+                        for (Long carrierId : carrierIds) {
+                            CarrierDetails carrierDetails = new CarrierDetails();
+                            carrierDetails.setCompanyId(companyId);
+                            carrierDetails.setIsActive(true);
+                            carrierDetails.setIsDeleted(false);
+                            carrierDetails.setCarrierId(carrierId);
+                            carrierDetailsRepository.save(carrierDetails);
+                        }
+                    }
+                    return "Updated successfully";
+            } else {
+                // Save new carrier details (Create case)
+                if (carrierIds != null && !carrierIds.isEmpty()) {
+                    List<CarrierDetails> list = new ArrayList<>();
+
+                    for (Long carrierId : carrierIds) {
+                        CarrierDetails carrierDetails = new CarrierDetails();
+                        carrierDetails.setCompanyId(companyId);
+                        carrierDetails.setIsActive(true);
+                        carrierDetails.setIsDeleted(false);
+                        carrierDetails.setCarrierId(carrierId);
+                        // Save each carrierDetails
+                        list.add(carrierDetails);
+                        carrierDetailsRepository.save(carrierDetails);
+                    }
+
+                    return "Data saved successfully";
+                } else {
+                    return "No carrier IDs provided";
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace(); // Replace with proper logging if needed
+            return "Error occurred while saving/updating carrier details: " + e.getMessage();
         }
-        carrierDetailsRepository.saveAll(list);
-        return "save data successfully";
     }
+
+    @Override
+    public Object saveOrUpdateBrandDetails(BrandDetailsRequest brandDetailsRequest) throws Exception {
+        if(brandDetailsRepository.existsById(brandDetailsRequest.getBrandDetailsId())){
+            BrandDetails brandDetails = brandDetailsRepository.findById(brandDetailsRequest.getBrandDetailsId()).get();
+            brandDetails.setBrandName(brandDetailsRequest.getBrandName());
+            brandDetails.setColor(brandDetailsRequest.getColor());
+
+            //brandDetails.setLogo(brandDetailsRequest.getLogo());
+            brandDetails.setLink(brandDetailsRequest.getLink());
+            brandDetailsRepository.save(brandDetails);
+            return "updated successfully";
+        }else {
+            BrandDetails brandDetails = new BrandDetails();
+            brandDetails.setBrandName(brandDetailsRequest.getBrandName());
+            brandDetails.setColor(brandDetailsRequest.getColor());
+            brandDetails.setLink(brandDetailsRequest.getLink());
+            brandDetails.setCompanyId(getUserFromToken.getUserFromToken().getCompanyId());
+            brandDetails.setIsActive(true);
+            brandDetails.setIsDeleted(false);
+            brandDetailsRepository.save(brandDetails);
+            brandDetails.setLogo(this.brandLogoImage(brandDetailsRequest.getLogo()));
+            brandDetailsRepository.save(brandDetails);
+            return "save data successfully";
+        }
+
+    }
+
+    @Override
+    public String brandLogoImage(MultipartFile logo) throws Exception {
+        if(logo!=null){
+            String storagePath = "C:\\Users\\oms-desktop\\Pictures\\shipmentImages";
+            String originalFileName = logo.getOriginalFilename();
+            Path path = Paths.get(storagePath,originalFileName);
+            Files.write(path, logo.getBytes());
+            return originalFileName;
+        }else {
+            throw new Exception("file not found");
+        }
+    }
+
 }

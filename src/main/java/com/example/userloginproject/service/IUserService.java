@@ -5,7 +5,7 @@ import com.example.userloginproject.model.request.UserRequest;
 import org.springframework.data.domain.Pageable;
 
 public interface IUserService {
-    Object saveOrUpdateUser(UserRequest userRequest);
+    Object saveOrUpdateUser(UserRequest userRequest) throws Exception;
 
     Object getByUSerId(Long userId) throws Exception;
 
@@ -13,7 +13,7 @@ public interface IUserService {
 
     Object deleteUserById(Long userId) throws Exception;
 
-    Object saveOrUpdateDetails(StoreDetailsRequest storeDetailsRequest);
+    Object saveOrUpdateCompanyStoreDetails(StoreDetailsRequest storeDetailsRequest);
 
     Object getAllStoreDetailsByCompanyId(Long companyId) throws Exception;
 }

@@ -56,10 +56,10 @@ public class UserController {
             return new ResponseEntity<>(new CustomResponse(e.getMessage(),-1),HttpStatus.OK);
         }
     }
-    @PostMapping("/saveOrUpdateStoreDetails")
-    public ResponseEntity<?>saveOrUpdateDetails(@RequestBody StoreDetailsRequest storeDetailsRequest){
+    @PostMapping("/saveOrUpdateCompanyStoreDetails")
+    public ResponseEntity<?>saveOrUpdateCompanyStoreDetails(@RequestBody StoreDetailsRequest storeDetailsRequest){
         try{
-            return new ResponseEntity<>(new EntityResponse(iUserService.saveOrUpdateDetails(storeDetailsRequest),0),HttpStatus.OK);
+            return new ResponseEntity<>(new EntityResponse(iUserService.saveOrUpdateCompanyStoreDetails(storeDetailsRequest),0),HttpStatus.OK);
         }catch (Exception e){
             return new ResponseEntity<>(new CustomResponse(e.getMessage(),-1),HttpStatus.OK);
         }

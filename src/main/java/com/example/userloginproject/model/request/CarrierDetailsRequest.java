@@ -12,5 +12,5 @@ import java.util.List;
 @AllArgsConstructor
 public class CarrierDetailsRequest {
     private Long carrierDetailsId;
-    List<Long> carrierIds;
+    private List<Long> carrierIds;
 }

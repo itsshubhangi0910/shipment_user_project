@@ -5,7 +5,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 
 public interface IAdminUserService {
-    Object register(String email, String password);
+    Object register(String email, String password) throws Exception;
 
     UserDetails loadUserByUsername(String email);
 

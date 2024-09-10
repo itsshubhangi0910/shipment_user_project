@@ -61,23 +61,24 @@ public class AdminUserService implements UserDetailsService, IAdminUserService {
     }
 
     @Override
-    public Object register(String email, String password) {
+    public Object register(String email, String password) throws Exception {
        // try {
+        if (companyRepository.existsByEmailIgnoreCaseAndIsDeleted(email.trim(),false)){
+            throw new Exception("This Email is Already Exists..!");
+        }else {
             Company company = new Company();
             company.setEmail(email);
             company.setPassword((bCryptPasswordEncoder.encode(password)));
-           // user.setGender(Gender.MALE);
-           // company.setName("HomeStay");
-            //company.setPhoneNo("Admin");
             company.setIsActive(true);
             company.setIsDeleted(false);
             companyRepository.save(company);
-            company.setCompanyId(getUserFromToken.getUserFromToken().getCompanyId());
-           companyRepository.save(company);
+            company.setCompanyId(company.getId());
+            companyRepository.save(company);
        /* } catch (Exception e) {
             e.printStackTrace();
         }*/
-        return "User Registered successfully";
+            return "User Registered successfully";
+        }
 
     }
 
