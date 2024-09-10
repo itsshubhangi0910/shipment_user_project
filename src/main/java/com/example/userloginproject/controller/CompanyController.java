@@ -1,6 +1,7 @@
 package com.example.userloginproject.controller;
 
 import com.example.userloginproject.model.request.BrandDetailsRequest;
+import com.example.userloginproject.model.request.BusinessDetailsRequest;
 import com.example.userloginproject.model.request.CarrierDetailsRequest;
 import com.example.userloginproject.model.request.CompanyRequest;
 import com.example.userloginproject.model.response.CustomResponse;
@@ -66,6 +67,22 @@ public class CompanyController {
     public ResponseEntity<?>barrierLogoImage(@ModelAttribute("logo") MultipartFile logo){
         try{
             return new ResponseEntity<>(new EntityResponse(iCompanyService.brandLogoImage(logo),0),HttpStatus.OK);
+        }catch (Exception e){
+            return new ResponseEntity<>(new CustomResponse(e.getMessage(),-1),HttpStatus.OK);
+        }
+    }
+    @PostMapping("/saveOrUpdateBusinessDetails")
+    public ResponseEntity<?>saveOrUpdateBusinessDetails(@ModelAttribute BusinessDetailsRequest businessDetailsRequest){
+        try{
+            return new ResponseEntity<>(new EntityResponse(iCompanyService.saveOrUpdateBusinessDetails(businessDetailsRequest),0),HttpStatus.OK);
+        }catch (Exception e){
+            return new ResponseEntity<>(new CustomResponse(e.getMessage(),-1),HttpStatus.OK);
+        }
+    }
+    @GetMapping("/getBusinessDetailsById")
+    public ResponseEntity<?>getBusinessDetailsById(@RequestParam Long businessDetailsId){
+        try{
+            return new ResponseEntity<>(new EntityResponse(iCompanyService.getBusinessDetailsById(businessDetailsId),0),HttpStatus.OK);
         }catch (Exception e){
             return new ResponseEntity<>(new CustomResponse(e.getMessage(),-1),HttpStatus.OK);
         }

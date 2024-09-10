@@ -2,11 +2,14 @@ package com.example.userloginproject.service.impl;
 
 import com.example.userloginproject.config.GetUserFromToken;
 import com.example.userloginproject.model.BrandDetails;
+import com.example.userloginproject.model.BusinessDetails;
 import com.example.userloginproject.model.CarrierDetails;
 import com.example.userloginproject.model.Company;
 import com.example.userloginproject.model.request.BrandDetailsRequest;
+import com.example.userloginproject.model.request.BusinessDetailsRequest;
 import com.example.userloginproject.model.request.CompanyRequest;
 import com.example.userloginproject.repository.BrandDetailsRepository;
+import com.example.userloginproject.repository.BusinessDetailsRepository;
 import com.example.userloginproject.repository.CarrierDetailsRepository;
 import com.example.userloginproject.repository.CompanyRepository;
 import com.example.userloginproject.service.ICompanyService;
@@ -36,6 +39,9 @@ public class CompanyService implements ICompanyService {
 
     @Autowired
     private BrandDetailsRepository brandDetailsRepository;
+
+    @Autowired
+    private BusinessDetailsRepository businessDetailsRepository;
 
     @Override
     public Object signUpUser(CompanyRequest companyRequest) {
@@ -190,4 +196,39 @@ public class CompanyService implements ICompanyService {
         }
     }
 
+    @Override
+    public Object saveOrUpdateBusinessDetails(BusinessDetailsRequest businessDetailsRequest) throws Exception {
+        if (businessDetailsRepository.existsById(businessDetailsRequest.getBusinessDetailsId())){
+            BusinessDetails businessDetails = businessDetailsRepository.findById(businessDetailsRequest.getBusinessDetailsId()).get();
+            saveUpdateBusinessDetails(businessDetails,businessDetailsRequest);
+            return "update Data Successfully";
+        }else {
+            BusinessDetails businessDetails = new BusinessDetails();
+            saveUpdateBusinessDetails(businessDetails,businessDetailsRequest);
+            return "save Data Successfully";
+        }
+    }
+
+    @Override
+    public Object getBusinessDetailsById(Long businessDetailsId) throws Exception {
+        if (businessDetailsRepository.existsById(businessDetailsId)){
+            BusinessDetails businessDetails = businessDetailsRepository.findById(businessDetailsId).get();
+            return businessDetails;
+        }else {
+            throw new Exception("id not found");
+        }
+    }
+
+    private void saveUpdateBusinessDetails(BusinessDetails businessDetails, BusinessDetailsRequest businessDetailsRequest) throws Exception {
+        businessDetails.setEORINumber(businessDetailsRequest.getEORINumber());
+        businessDetails.setVATNumber(businessDetailsRequest.getVATNumber());
+        businessDetails.setLossNumber(businessDetailsRequest.getLossNumber());
+        businessDetails.setFullName(businessDetailsRequest.getFullName());
+        businessDetails.setInitials(businessDetailsRequest.getInitials());
+        businessDetails.setCompanyId(getUserFromToken.getUserFromToken().getCompanyId());
+        businessDetailsRepository.save(businessDetails);
+        businessDetails.setFile(this.brandLogoImage(businessDetailsRequest.getFile()));
+        businessDetailsRepository.save(businessDetails);
+
+    }
 }
