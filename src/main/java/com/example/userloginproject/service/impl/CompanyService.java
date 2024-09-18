@@ -215,6 +215,7 @@ public class CompanyService implements ICompanyService {
             BusinessDetails businessDetails = businessDetailsRepository.findById(businessDetailsId).get();
             return businessDetails;
         }else {
+
             throw new Exception("id not found");
         }
     }
