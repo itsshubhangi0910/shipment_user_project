@@ -62,7 +62,7 @@ public class UserService implements IUserService {
             }else {
                 user.setMobileNo(userRequest.getMobileNo());
             }
-            if (userRepository.existsByEmailAndIsDeleted(userRequest.getEmail(),false)){
+            if (userRepository.existsByEmailIgnoreCaseAndIsDeleted(userRequest.getEmail(),false)){
                 throw new Exception("email already exists");
             }else {
                 user.setEmail(userRequest.getEmail());

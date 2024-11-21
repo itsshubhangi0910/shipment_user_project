@@ -19,7 +19,7 @@ public interface UserRepository extends JpaRepository<User,Long> {
 
     boolean existsByMobileNo(String mobileNo);
 
-    boolean existsByEmailAndIsDeleted(String email, boolean b);
+    boolean existsByEmailIgnoreCaseAndIsDeleted(String email, boolean b);
 
     boolean existsByMobileNoAndUserIdNotIn(String mobileNo, List<Long> userIds);
 

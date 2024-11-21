@@ -11,3 +11,4 @@ public class Constants {
     public static final String AUTHORITIES_KEY = "scopes";
 
 }
+

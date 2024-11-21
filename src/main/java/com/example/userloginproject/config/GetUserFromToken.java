@@ -20,6 +20,7 @@ public class GetUserFromToken {
             UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication()
                     .getPrincipal();
             String username = userDetails.getUsername();
+            System.out.println(username);
             //tokenDecodeResponse = decodeToken(JwtAuthenticationFilter.jwtTokenGlobal);
             return iAdminUserService.findByEmail(username);
         } catch (Exception e) {
