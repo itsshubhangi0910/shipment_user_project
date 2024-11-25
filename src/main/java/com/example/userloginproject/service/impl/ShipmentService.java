@@ -6,7 +6,10 @@ import com.example.userloginproject.model.CargoDetails;
 import com.example.userloginproject.model.Shipment;
 import com.example.userloginproject.model.request.CargoBoxDetailsRequest;
 import com.example.userloginproject.model.request.CargoDetailsRequest;
+import com.example.userloginproject.model.request.ShipmentFilterRequest;
 import com.example.userloginproject.model.request.ShipmentRequest;
+import com.example.userloginproject.model.response.PageDto;
+import com.example.userloginproject.model.response.ShipResponse;
 import com.example.userloginproject.repository.CargoBoxDetailsRepository;
 import com.example.userloginproject.repository.CargoDetailsRepository;
 import com.example.userloginproject.repository.ShipmentRepository;
@@ -14,6 +17,9 @@ import com.example.userloginproject.service.IShipmentService;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -24,6 +30,10 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 @Service
@@ -176,6 +186,113 @@ public class ShipmentService implements IShipmentService {
 
     }
 
+//    @Override
+//    public Object getAllSearchByShipmentDetails(List<String> shipmentToCompanyName, List<String> shipmentToCountry, List<String> shipmentFromCountry,Pageable pageable) {
+//        List<ShipmentResponse> shipmentResponses = new ArrayList<>();
+//
+//        if (shipmentToCompanyName != null && !shipmentToCompanyName.isEmpty()) {
+//            shipmentToCompanyName = shipmentToCompanyName.stream()
+//                    .map(String::trim)
+//                    .collect(Collectors.toList());
+//        }
+//        if (shipmentToCountry != null && !shipmentToCountry.isEmpty()) {
+//            shipmentToCountry = shipmentToCountry.stream()
+//                    .map(String::trim)
+//                    .collect(Collectors.toList());
+//        }
+//        if (shipmentFromCountry != null && !shipmentFromCountry.isEmpty()) {
+//            shipmentFromCountry = shipmentFromCountry.stream()
+//                    .map(String::trim)
+//                    .collect(Collectors.toList());
+//        }
+//        List<Shipment> shipments = new ArrayList<>();
+//        Page<Shipment> searchingRequestPage=new PageImpl<>(shipments);
+//
+//        searchingRequestPage = shipmentRepository.shipmentSearching(shipmentToCompanyName, shipmentToCountry, shipmentFromCountry,pageable);
+//
+//        //System.out.println("searchingRequestPage size-->"+searchingRequestPage.getContent().size());
+//         if (searchingRequestPage !=null){
+//             for (Shipment s: searchingRequestPage){
+//                 ShipmentResponse response = new ShipmentResponse();
+//                 response.setShipmentId(s.getShipmentId());
+//                 response.setCompanyId(s.getCompanyId());
+//                 response.setShipmentFromAddress(s.getShipmentFromAddress());
+//                 response.setShipmentFromCompanyName(s.getShipmentFromCompanyName());
+//                 response.setShipmentFromContactPersonName(s.getShipmentFromContactPersonName());
+//                 response.setShipmentFromCountry(s.getShipmentFromCountry());
+//                 response.setShipmentFromPhoneNumber(s.getShipmentFromPhoneNumber());
+//                 response.setShippingFromAddressLine2(s.getShippingFromAddressLine2());
+//                 response.setShippingFromCity(s.getShippingFromCity());
+//                 response.setShippingFromEmailAddress(s.getShippingFromEmailAddress());
+//                 response.setShippingFromState(s.getShippingFromState());
+//                 response.setShippingFromZip(s.getShippingFromZip());
+//                 response.setShipmentToAddress(s.getShipmentToAddress());
+//                 response.setShipmentToCompanyName(s.getShipmentToCompanyName());
+//                 response.setShipmentToContactPersonName(s.getShipmentToContactPersonName());
+//                 response.setShipmentToCountry(s.getShipmentToCountry());
+//                 response.setShipmentToPhoneNumber(s.getShipmentToPhoneNumber());
+//                 response.setShippingToAddressLine2(s.getShippingToAddressLine2());
+//                 response.setShippingToCity(s.getShippingToCity());
+//                 response.setShippingToEmailAddress(s.getShippingToEmailAddress());
+//                 response.setShippingToState(s.getShippingToState());
+//                 response.setShippingToZip(s.getShippingToZip());
+//                 shipmentResponses.add(response);
+//             }
+//         }
+//        return new PageDto(shipmentResponses,searchingRequestPage.getTotalElements(),searchingRequestPage.getTotalPages(),searchingRequestPage.getNumber());
+//    }
+
+    @Override
+    public Object getAllSearchByShipmentDetails(ShipmentFilterRequest shipmentFilterRequest, Pageable pageable) {
+        List<ShipResponse> shipmentList = new ArrayList<>();
+        LocalDateTime stDate = null;
+        LocalDateTime edDate = null;
+        if (shipmentFilterRequest.getShipmentFromCountry() != null && !shipmentFilterRequest.getShipmentFromCountry().isEmpty()) {
+            shipmentFilterRequest.getShipmentFromCountry().trim().toLowerCase();
+        }
+
+        if (shipmentFilterRequest.getShipmentToCountry() != null && !shipmentFilterRequest.getShipmentToCountry().isEmpty()) {
+            shipmentFilterRequest.getShipmentToCountry().trim().toLowerCase();
+        }
+
+        if (shipmentFilterRequest.getShipmentToCompanyName() != null && !shipmentFilterRequest.getShipmentToCompanyName().isEmpty()) {
+            shipmentFilterRequest.getShipmentToCompanyName().trim().toLowerCase();
+        }
+        if (shipmentFilterRequest.getStartDate() != null && !shipmentFilterRequest.getStartDate() .trim().isEmpty()) {
+            LocalDate date = LocalDate.parse(shipmentFilterRequest.getStartDate() );//2024-11-21
+            stDate = date.atStartOfDay();//00:00:00
+        }
+        if (shipmentFilterRequest.getEndDate()  != null && !shipmentFilterRequest.getEndDate() .trim().isEmpty()) {
+            LocalDate date = LocalDate.parse(shipmentFilterRequest.getEndDate() );
+            edDate = date.atStartOfDay();
+        }
+            Page<ShipResponse> shipmentPage = new PageImpl<>(shipmentList);
+
+                shipmentPage = shipmentRepository.searchShipmentByFiltersWithDates(shipmentFilterRequest.getShipmentFromCountry()
+                        , shipmentFilterRequest.getShipmentToCompanyName(),shipmentFilterRequest.getShipmentToCountry()
+                        ,stDate, edDate,pageable);
+                System.out.println("in if of st ed dates-->" + shipmentPage.getContent());
+
+        if ("desc".equalsIgnoreCase(shipmentFilterRequest.getSortBy())) {
+            List<ShipResponse> content = new ArrayList<>(shipmentPage.getContent());
+
+            if ("shipmentToCountry".equals(shipmentFilterRequest.getOrderBy())) {
+                Collections.reverse(content);
+                return content;
+            } else if ("shipmentFromCountry".equalsIgnoreCase(shipmentFilterRequest.getOrderBy())) {
+                Collections.reverse(content);
+                return content;
+            } else if ("shipmentToCompanyName".equalsIgnoreCase(shipmentFilterRequest.getOrderBy())) {
+                Collections.reverse(content);
+                return content;
+            }
+            Collections.reverse(content);
+            return content;
+        } else {
+            //return shipment.getContent();
+            return new PageDto(shipmentPage.getContent(), shipmentPage.getTotalElements(), shipmentPage.getTotalPages(), shipmentPage.getNumber());
+        }
+    }
 
 
     private String parseImageUrlFromResponse(String response) {

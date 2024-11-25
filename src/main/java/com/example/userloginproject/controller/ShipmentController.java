@@ -1,17 +1,21 @@
 package com.example.userloginproject.controller;
 
-import com.example.userloginproject.model.CargoBoxDetails;
 import com.example.userloginproject.model.request.CargoBoxDetailsRequest;
 import com.example.userloginproject.model.request.CargoDetailsRequest;
+import com.example.userloginproject.model.request.ShipmentFilterRequest;
 import com.example.userloginproject.model.request.ShipmentRequest;
 import com.example.userloginproject.model.response.CustomResponse;
 import com.example.userloginproject.model.response.EntityResponse;
 import com.example.userloginproject.service.IShipmentService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/shipmentApi")
@@ -97,7 +101,26 @@ public class ShipmentController {
         }
     }
 
+    @PostMapping("/getAllSearchByShipmentDetails")
+    public ResponseEntity<?>getAllSearchByShipmentDetails(@RequestBody ShipmentFilterRequest shipmentFilterRequest){
+        try{
+            Pageable pageable = PageRequest.of(Optional.ofNullable(shipmentFilterRequest.getPageNo()).orElse(0), Optional.ofNullable(shipmentFilterRequest.getPageSize()).orElse(50));
+            return new ResponseEntity<>(new EntityResponse(iShipmentService.getAllSearchByShipmentDetails(shipmentFilterRequest,pageable),0),HttpStatus.OK);
+        }catch (Exception e){
+            return new ResponseEntity<>(new CustomResponse(e.getMessage(),-1),HttpStatus.OK);
+        }
 
+    }
+
+//    @PostMapping("/getAllSearchByShipmentDetails")
+//    public ResponseEntity<?>getAllSearchByShipmentDetails(@RequestBody ShipmentFilterRequest filterRequest){
+//        try{
+//            Pageable pageable = PageRequest.of(Optional.ofNullable(filterRequest.getPageNo()).orElse(0), Optional.ofNullable(filterRequest.getPageSize()).orElse(50));
+//            return new ResponseEntity<>(new EntityResponse(iShipmentService.getAllSearchByShipmentDetails(filterRequest.getShipmentToCompanyName(),filterRequest.getShipmentToCountry(),filterRequest.getShipmentFromCountry(),pageable),0),HttpStatus.OK);
+//        }catch (Exception e){
+//            return new ResponseEntity<>(new CustomResponse(e.getMessage(),-1),HttpStatus.OK);
+//        }
+//    }
 
 
 }
